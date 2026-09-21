@@ -157,7 +157,7 @@ export default function PublicExperience({ slug }: { slug: string }) {
         <div className="gate-grid" aria-hidden="true" />
         <span className="gate-top">ARKAVIA DJ FEST <span>✦</span> PRIVATE TRANSMISSION</span>
         <div className="gate-center"><Wordmark className="gate-wordmark" priority /><div className="gate-line" /><p>A MESSAGE FOR <strong>DJ {dj.name.toUpperCase()}</strong></p><button className="gate-open" onClick={enter}><span className="gate-open-icon"><Headphones size={25} strokeWidth={1.5} /></span><span>BUKA PESAN <small>{settings.music_url ? "TAP FOR SOUND & EXPERIENCE" : "TAP TO OPEN THE EXPERIENCE"}</small></span><ArrowUpRight size={19} /></button></div>
-        <span className="gate-bottom">SCROLL INTO THE SIGNAL <ArrowDown size={15} /></span>
+        {/* <span className="gate-bottom">SCROLL INTO THE SIGNAL <ArrowDown size={15} /></span> */}
       </motion.div>}</AnimatePresence>
 
       <div aria-hidden={!open} inert={!open}>
