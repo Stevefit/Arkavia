@@ -33,6 +33,7 @@ export default function PublicExperience({ slug }: { slug: string }) {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [open, setOpen] = useState(false);
+  const [introMuted, setIntroMuted] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [formName, setFormName] = useState("");
   const [formMessage, setFormMessage] = useState("");
@@ -40,6 +41,7 @@ export default function PublicExperience({ slug }: { slug: string }) {
   const [posting, setPosting] = useState(false);
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState("");
+  const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const reduced = useReducedMotion();
   const { scrollYProgress } = useScroll();
@@ -88,9 +90,32 @@ export default function PublicExperience({ slug }: { slug: string }) {
   }, [state, open]);
 
   async function enter() {
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.muted = true;
+    }
     setOpen(true);
     if (settings?.music_url && audioRef.current) {
       try { await audioRef.current.play(); setPlaying(true); } catch { setPlaying(false); }
+    }
+  }
+
+  async function toggleIntroSound() {
+    const video = videoRef.current;
+    if (!video) return;
+    if (!video.muted) {
+      video.muted = true;
+      setIntroMuted(true);
+      return;
+    }
+    video.currentTime = 0;
+    video.muted = false;
+    try {
+      await video.play();
+      setIntroMuted(false);
+    } catch {
+      video.muted = true;
+      setIntroMuted(true);
     }
   }
 
@@ -160,7 +185,7 @@ export default function PublicExperience({ slug }: { slug: string }) {
       <AnimatePresence>{!open && <motion.div className="opening-gate" initial={{ opacity: 1 }} exit={{ opacity: 0, scale: 1.08, filter: "blur(16px)" }} transition={{ duration: reduced ? 0.2 : 0.7 }}>
         <div className="gate-grid" aria-hidden="true" />
         <span className="gate-top">ARKAVIA DJ FEST <span>✦</span> PRIVATE TRANSMISSION</span>
-        <div className="gate-center"><video className="gate-video" src={OPENING_VIDEO_URL} autoPlay muted playsInline loop preload="metadata" aria-label="ARKAVIA DJ FEST opening video" /><Wordmark className="gate-wordmark" priority /><div className="gate-line" /><p>A MESSAGE FOR <strong>DJ {dj.name.toUpperCase()}</strong></p><button className="gate-open" onClick={enter}><span className="gate-open-icon"><Headphones size={25} strokeWidth={1.5} /></span><span>BUKA PESAN <small>{settings.music_url ? "TAP FOR SOUND & EXPERIENCE" : "TAP TO OPEN THE EXPERIENCE"}</small></span><ArrowUpRight size={19} /></button></div>
+        <div className="gate-center"><div className="gate-video-frame"><video ref={videoRef} className="gate-video" src={OPENING_VIDEO_URL} autoPlay muted={introMuted} playsInline loop preload="metadata" aria-label="ARKAVIA DJ FEST opening video" /><button type="button" className={`intro-sound-button ${introMuted ? "" : "is-on"}`} onClick={toggleIntroSound} aria-pressed={!introMuted}>{introMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}<span>{introMuted ? "PLAY INTRO WITH SOUND" : "INTRO SOUND ON"}</span></button></div><Wordmark className="gate-wordmark" priority /><div className="gate-line" /><p>A MESSAGE FOR <strong>DJ {dj.name.toUpperCase()}</strong></p><button className="gate-open" onClick={enter}><span className="gate-open-icon"><Headphones size={25} strokeWidth={1.5} /></span><span>BUKA PESAN <small>{settings.music_url ? "TAP FOR SOUND & EXPERIENCE" : "TAP TO OPEN THE EXPERIENCE"}</small></span><ArrowUpRight size={19} /></button></div>
         {/* <span className="gate-bottom">SCROLL INTO THE SIGNAL <ArrowDown size={15} /></span> */}
       </motion.div>}</AnimatePresence>
 
