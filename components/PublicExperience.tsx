@@ -10,7 +10,7 @@ import type { Dj, GuestComment, Settings } from "@/lib/types";
 
 type PageState = "loading" | "ready" | "missing" | "error";
 
-const OPENING_VIDEO_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/opening-video.mp4";
+const OPENING_VIDEO_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/cut%20landscape.mov";
 const INTERLUDE_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/interlude-image.png";
 
 function relativeTime(value: string) {
