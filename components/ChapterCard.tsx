@@ -89,7 +89,6 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
   const contentParagraphs = signatureIndex >= 0 ? allParagraphs.slice(0, signatureIndex) : allParagraphs;
   const signatureParagraphs = signatureIndex >= 0 ? allParagraphs.slice(signatureIndex) : [];
   const variants = reduced ? reducedVariants : containerVariants;
-  const motionProps = preview ? { initial: false as const } : { initial: "hidden", whileInView: "visible", viewport: { once: true, amount: 0.4 } };
   const targetParagraphIndex = contentParagraphs.findIndex((paragraph) => paragraph.includes("Bagi kami, ARKAVIA"));
   const isSectionThree = role === "body" && index === 2;
   const hasChapterMedia = isSectionThree || targetParagraphIndex >= 0;
@@ -97,6 +96,7 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
   const paragraphsBeforeMedia = usesLegacyPlacement ? contentParagraphs.slice(0, targetParagraphIndex) : [];
   const featureParagraphs = usesLegacyPlacement ? contentParagraphs.slice(targetParagraphIndex, targetParagraphIndex + 1) : contentParagraphs;
   const paragraphsAfterMedia = usesLegacyPlacement ? contentParagraphs.slice(targetParagraphIndex + 1) : [];
+  const motionProps = preview ? { initial: false as const } : { initial: "hidden", whileInView: "visible", viewport: { once: true, amount: hasChapterMedia ? 0.12 : 0.4 } };
 
   return <motion.article
     className={`chapter-card chapter-${role} ${active || preview || reduced ? "is-active" : ""}`}
