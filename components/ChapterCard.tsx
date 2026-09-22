@@ -4,9 +4,42 @@ import { motion, type Variants } from "framer-motion";
 import Image from "next/image";
 import type { ChapterRole } from "@/lib/parseSections";
 
-const MAP_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/map.jpg";
+const MAP_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/map_fix.jpg";
 const UNDER_STAGE_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/under_stage.jpg";
-type MediaKind = "map" | "stage";
+const STAGE_LEFT_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/stage_left.jpg";
+const STAGE_RIGHT_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/stage_right.jpg";
+type MediaKind = "map" | "stage" | "stage-left" | "stage-right";
+
+const mediaDetails: Record<MediaKind, { src: string; alt: string; label: string; detail: string; sizes: string }> = {
+  map: {
+    src: MAP_IMAGE_URL,
+    alt: "Pemandangan area ARKAVIA dari atas",
+    label: "ARKAVIA WORLD MAP",
+    detail: "COORDINATES / MEMORY 01",
+    sizes: "(max-width: 760px) calc(100vw - 92px), 420px",
+  },
+  stage: {
+    src: UNDER_STAGE_IMAGE_URL,
+    alt: "Suasana di bawah panggung ARKAVIA",
+    label: "BELOW THE STAGE",
+    detail: "WHERE THE FREQUENCY LIVES",
+    sizes: "(max-width: 760px) calc(100vw - 92px), 850px",
+  },
+  "stage-left": {
+    src: STAGE_LEFT_IMAGE_URL,
+    alt: "Pemandangan panggung ARKAVIA dari sisi kiri",
+    label: "STAGE LEFT",
+    detail: "ONE NIGHT / ONE MEMORY",
+    sizes: "(max-width: 760px) calc(100vw - 92px), 520px",
+  },
+  "stage-right": {
+    src: STAGE_RIGHT_IMAGE_URL,
+    alt: "Pemandangan panggung ARKAVIA dari sisi kanan",
+    label: "STAGE RIGHT",
+    detail: "THE MOMENT STAYS",
+    sizes: "(max-width: 760px) calc(100vw - 92px), 520px",
+  },
+};
 
 type ChapterCardProps = {
   index: number;
@@ -66,19 +99,19 @@ function BodyCopy({ paragraphs, pullQuote = null, className = "" }: { paragraphs
 
 function ChapterVisual({ kind, reduced }: { kind: MediaKind; reduced: boolean }) {
   const variants = reduced ? reducedMediaVariants : mediaVariants;
-  const isMap = kind === "map";
+  const media = mediaDetails[kind];
   return <motion.figure className={`chapter-visual chapter-visual-${kind}`} variants={variants}>
     <div className="chapter-visual-frame">
       <Image
-        src={isMap ? MAP_IMAGE_URL : UNDER_STAGE_IMAGE_URL}
-        alt={isMap ? "Pemandangan area ARKAVIA dari atas" : "Suasana di bawah panggung ARKAVIA"}
+        src={media.src}
+        alt={media.alt}
         fill
-        sizes={isMap ? "(max-width: 760px) calc(100vw - 92px), 420px" : "(max-width: 760px) calc(100vw - 92px), 850px"}
+        sizes={media.sizes}
         unoptimized
       />
       <span className="chapter-visual-grid" aria-hidden="true" />
     </div>
-    <figcaption><span>{isMap ? "ARKAVIA WORLD MAP" : "BELOW THE STAGE"}</span><span>{isMap ? "COORDINATES / MEMORY 01" : "WHERE THE FREQUENCY LIVES"}</span></figcaption>
+    <figcaption><span>{media.label}</span><span>{media.detail}</span></figcaption>
   </motion.figure>;
 }
 
@@ -97,7 +130,12 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
   const targetParagraphIndex = contentParagraphs.findIndex((paragraph) => paragraph.includes("Bagi kami, ARKAVIA"));
   const hasMapMedia = text.includes("Terima kasih banyak sudah berbagi") || role === "body" && index === 2 && total >= 5;
   const hasStageMedia = text.includes("Bagi kami, ARKAVIA") || role === "body" && index === 3 && total >= 5;
-  const mediaKinds: MediaKind[] = [...(hasMapMedia ? ["map" as const] : []), ...(hasStageMedia ? ["stage" as const] : [])];
+  const hasStagePair = text.includes("Sekali lagi, terima kasih banyak") || role === "closing" && total >= 5;
+  const mediaKinds: MediaKind[] = [
+    ...(hasMapMedia ? ["map" as const] : []),
+    ...(hasStageMedia ? ["stage" as const] : []),
+    ...(hasStagePair ? ["stage-left" as const, "stage-right" as const] : []),
+  ];
   const hasChapterMedia = mediaKinds.length > 0;
   const usesLegacyPlacement = mediaKinds.length > 1 && targetParagraphIndex >= 0;
   const paragraphsBeforeMedia = usesLegacyPlacement ? contentParagraphs.slice(0, targetParagraphIndex) : [];
@@ -113,7 +151,7 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
     {...motionProps}
   >
     {role === "title" && <span className="chapter-title-glow" aria-hidden="true" />}
-    <div className={`chapter-card-inner ${hasChapterMedia ? "has-chapter-media" : ""} ${hasMapMedia ? "has-map-media" : ""} ${hasStageMedia ? "has-stage-media" : ""}`}>
+    <div className={`chapter-card-inner ${hasChapterMedia ? "has-chapter-media" : ""} ${hasMapMedia ? "has-map-media" : ""} ${hasStageMedia ? "has-stage-media" : ""} ${hasStagePair ? "has-stage-pair" : ""}`}>
       {role !== "title" && <div className="chapter-hud"><span>MESSAGE CHAPTER</span><span>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span></div>}
 
       {role === "title" ? <div className="chapter-title-copy">
