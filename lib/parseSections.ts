@@ -6,7 +6,7 @@ export type MessageSection = {
   pullQuote: string | null;
 };
 
-const SECTION_DELIMITER = /^\s*---\s*$/m;
+const SECTION_DELIMITER = /^[\t ]*---[\t ]*$/m;
 const EXPLICIT_QUOTE = /\*\*([^*\n]+)\*\*/;
 
 function paragraphs(text: string) {
