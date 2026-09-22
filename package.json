@@ -6,6 +6,7 @@
     "dev": "WATCHPACK_POLLING=true next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "typecheck": "tsc --noEmit",
     "db:migrate": "node scripts/migrate.mjs"
   },

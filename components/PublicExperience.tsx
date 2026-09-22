@@ -1,10 +1,11 @@
 "use client";
 
-import { AnimatePresence, motion, useMotionValue, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { ArrowDown, ArrowUpRight, AudioLines, ChevronDown, Disc3, Headphones, Music2, Pause, Play, Send, Volume2, VolumeX } from "lucide-react";
 import Image from "next/image";
-import { FormEvent, MouseEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Mark, Wordmark } from "./Brand";
+import MessageChapters from "./MessageChapters";
 import Reveal from "./Reveal";
 import type { Dj, GuestComment, Settings } from "@/lib/types";
 
@@ -47,18 +48,6 @@ export default function PublicExperience({ slug }: { slug: string }) {
   const { scrollYProgress } = useScroll();
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 130, damping: 30 });
   const orbY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -180]);
-  const tiltX = useMotionValue(0);
-  const tiltY = useMotionValue(0);
-  const springTiltX = useSpring(tiltX, { stiffness: 180, damping: 24 });
-  const springTiltY = useSpring(tiltY, { stiffness: 180, damping: 24 });
-
-  function tiltCard(event: MouseEvent<HTMLDivElement>) {
-    if (reduced || window.matchMedia("(pointer: coarse)").matches) return;
-    const rect = event.currentTarget.getBoundingClientRect();
-    tiltX.set(((event.clientY - rect.top) / rect.height - 0.5) * -4);
-    tiltY.set(((event.clientX - rect.left) / rect.width - 0.5) * 4);
-  }
-
   useEffect(() => {
     if (!slug) { setState("missing"); return; }
     const controller = new AbortController();
@@ -164,8 +153,6 @@ export default function PublicExperience({ slug }: { slug: string }) {
     } finally { setPosting(false); }
   }
 
-  const message = settings?.message_template.replaceAll("{name}", dj?.name || "") || "";
-
   return <main className="public-shell">
     <motion.div className="scroll-progress" style={{ scaleX: smoothProgress }} />
     <div className="ambient-grid" aria-hidden="true" />
@@ -196,7 +183,7 @@ export default function PublicExperience({ slug }: { slug: string }) {
         <div className="hero-bottom"><span>ARKAVIA DJ FEST / APPRECIATION 2026</span><span>MADE FOR DJ {dj.name.toUpperCase()}</span></div>
       </section>
 
-      <section id="message" className="message-section"><Reveal><div className="section-topline"><span>01 / THE MESSAGE</span><span>TRANSMISSION RECEIVED <span className="live-dot" /></span></div><div className="message-heading"><span className="eyebrow">TO THE ONE BEHIND THE DECKS</span><h2>YOU MADE IT <em>UNFORGETTABLE.</em></h2></div></Reveal><Reveal delay={0.1}><motion.div className="message-card" style={{ rotateX: springTiltX, rotateY: springTiltY, transformPerspective: 1200 }} onMouseMove={tiltCard} onMouseLeave={() => { tiltX.set(0); tiltY.set(0); }}><div className="card-top"><span>PERSONAL NOTE</span><span>FOR DJ {dj.name.toUpperCase()}</span></div><div className="message-copy">{message.split(/\n\s*\n/).map((paragraph, index) => <p key={index}>{paragraph}</p>)}</div><div className="card-bottom"><span>WITH LOVE, ARKAVIA & TEAM</span><span className="card-star">✳</span></div></motion.div></Reveal><div className="message-aside"><span>GOOD MUSIC STAYS WITH US.</span><span>✦</span><span>SO DO THE PEOPLE BEHIND IT.</span></div></section>
+      <section id="message" className="message-section"><Reveal><div className="section-topline"><span>01 / THE MESSAGE</span><span>TRANSMISSION RECEIVED <span className="live-dot" /></span></div><div className="message-heading"><span className="eyebrow">TO THE ONE BEHIND THE DECKS</span><h2>YOU MADE IT <em>UNFORGETTABLE.</em></h2></div></Reveal><MessageChapters template={settings.message_template} name={dj.name} /><div className="message-aside"><span>GOOD MUSIC STAYS WITH US.</span><span>✦</span><span>SO DO THE PEOPLE BEHIND IT.</span></div></section>
 
       <section className="interlude-section"><Reveal><div className="interlude-line">THE NIGHT ENDS. <span>THE MOMENTS STAY.</span></div><div className="interlude-image-frame"><Image className="interlude-image" src={INTERLUDE_IMAGE_URL} alt="ARKAVIA community gathered in front of the festival stage" width={1080} height={1920} sizes="(max-width: 760px) calc(100vw - 48px), 460px" unoptimized /></div><div className="interlude-meta">YOUR SET BECAME PART OF OUR STORY <AudioLines size={30} strokeWidth={1} /></div></Reveal></section>
 
