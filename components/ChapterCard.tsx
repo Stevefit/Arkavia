@@ -6,6 +6,7 @@ import type { ChapterRole } from "@/lib/parseSections";
 
 const MAP_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/map.jpg";
 const UNDER_STAGE_IMAGE_URL = "https://hd339l09uzcdhf0y.public.blob.vercel-storage.com/under_stage.jpg";
+type MediaKind = "map" | "stage";
 
 type ChapterCardProps = {
   index: number;
@@ -63,23 +64,27 @@ function BodyCopy({ paragraphs, pullQuote = null, className = "" }: { paragraphs
   </div>;
 }
 
-function ChapterMedia({ reduced }: { reduced: boolean }) {
+function ChapterVisual({ kind, reduced }: { kind: MediaKind; reduced: boolean }) {
   const variants = reduced ? reducedMediaVariants : mediaVariants;
+  const isMap = kind === "map";
+  return <motion.figure className={`chapter-visual chapter-visual-${kind}`} variants={variants}>
+    <div className="chapter-visual-frame">
+      <Image
+        src={isMap ? MAP_IMAGE_URL : UNDER_STAGE_IMAGE_URL}
+        alt={isMap ? "Pemandangan area ARKAVIA dari atas" : "Suasana di bawah panggung ARKAVIA"}
+        fill
+        sizes={isMap ? "(max-width: 760px) calc(100vw - 92px), 420px" : "(max-width: 760px) calc(100vw - 92px), 850px"}
+        unoptimized
+      />
+      <span className="chapter-visual-grid" aria-hidden="true" />
+    </div>
+    <figcaption><span>{isMap ? "ARKAVIA WORLD MAP" : "BELOW THE STAGE"}</span><span>{isMap ? "COORDINATES / MEMORY 01" : "WHERE THE FREQUENCY LIVES"}</span></figcaption>
+  </motion.figure>;
+}
+
+function ChapterMedia({ kinds, reduced }: { kinds: MediaKind[]; reduced: boolean }) {
   return <div className="chapter-media-sequence">
-    <motion.figure className="chapter-visual chapter-visual-map" variants={variants}>
-      <div className="chapter-visual-frame">
-        <Image src={MAP_IMAGE_URL} alt="Pemandangan area ARKAVIA dari atas" fill sizes="(max-width: 760px) calc(100vw - 92px), 420px" unoptimized />
-        <span className="chapter-visual-grid" aria-hidden="true" />
-      </div>
-      <figcaption><span>ARKAVIA WORLD MAP</span><span>COORDINATES / MEMORY 01</span></figcaption>
-    </motion.figure>
-    <motion.figure className="chapter-visual chapter-visual-stage" variants={variants}>
-      <div className="chapter-visual-frame">
-        <Image src={UNDER_STAGE_IMAGE_URL} alt="Suasana di bawah panggung ARKAVIA" fill sizes="(max-width: 760px) calc(100vw - 92px), 850px" unoptimized />
-        <span className="chapter-visual-grid" aria-hidden="true" />
-      </div>
-      <figcaption><span>BELOW THE STAGE</span><span>WHERE THE FREQUENCY LIVES</span></figcaption>
-    </motion.figure>
+    {kinds.map((kind) => <ChapterVisual key={kind} kind={kind} reduced={reduced} />)}
   </div>;
 }
 
@@ -90,9 +95,11 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
   const signatureParagraphs = signatureIndex >= 0 ? allParagraphs.slice(signatureIndex) : [];
   const variants = reduced ? reducedVariants : containerVariants;
   const targetParagraphIndex = contentParagraphs.findIndex((paragraph) => paragraph.includes("Bagi kami, ARKAVIA"));
-  const isSectionThree = role === "body" && index === 2;
-  const hasChapterMedia = isSectionThree || targetParagraphIndex >= 0;
-  const usesLegacyPlacement = !isSectionThree && targetParagraphIndex >= 0;
+  const hasMapMedia = text.includes("Terima kasih banyak sudah berbagi") || role === "body" && index === 2 && total >= 5;
+  const hasStageMedia = text.includes("Bagi kami, ARKAVIA") || role === "body" && index === 3 && total >= 5;
+  const mediaKinds: MediaKind[] = [...(hasMapMedia ? ["map" as const] : []), ...(hasStageMedia ? ["stage" as const] : [])];
+  const hasChapterMedia = mediaKinds.length > 0;
+  const usesLegacyPlacement = mediaKinds.length > 1 && targetParagraphIndex >= 0;
   const paragraphsBeforeMedia = usesLegacyPlacement ? contentParagraphs.slice(0, targetParagraphIndex) : [];
   const featureParagraphs = usesLegacyPlacement ? contentParagraphs.slice(targetParagraphIndex, targetParagraphIndex + 1) : contentParagraphs;
   const paragraphsAfterMedia = usesLegacyPlacement ? contentParagraphs.slice(targetParagraphIndex + 1) : [];
@@ -106,7 +113,7 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
     {...motionProps}
   >
     {role === "title" && <span className="chapter-title-glow" aria-hidden="true" />}
-    <div className={`chapter-card-inner ${hasChapterMedia ? "has-chapter-media" : ""}`}>
+    <div className={`chapter-card-inner ${hasChapterMedia ? "has-chapter-media" : ""} ${hasMapMedia ? "has-map-media" : ""} ${hasStageMedia ? "has-stage-media" : ""}`}>
       {role !== "title" && <div className="chapter-hud"><span>MESSAGE CHAPTER</span><span>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span></div>}
 
       {role === "title" ? <div className="chapter-title-copy">
@@ -116,7 +123,7 @@ export default function ChapterCard({ index, total, text, role, pullQuote = null
         <BodyCopy paragraphs={featureParagraphs} pullQuote={pullQuote} className="chapter-body-feature" />
       </> : <BodyCopy paragraphs={contentParagraphs} pullQuote={pullQuote} />}
 
-      {hasChapterMedia && <ChapterMedia reduced={reduced} />}
+      {hasChapterMedia && <ChapterMedia kinds={mediaKinds} reduced={reduced} />}
 
       {paragraphsAfterMedia.length > 0 && <BodyCopy paragraphs={paragraphsAfterMedia} className="chapter-body-after" />}
 
